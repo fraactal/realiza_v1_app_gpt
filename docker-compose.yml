@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+  database-service:
+    image: "postgres" # use latest official postgres version
+    env_file:
+      - ./database_postgresql/database.env # configurando postgres
+    volumes:
+      - ./database_postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql # persistir la informacion
+      - ./database_postgresql/seed.sql:/docker-entrypoint-initdb.d/seed.sql # persistir la informacion
+      - database-data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    networks:
+      - app-tier
+    container_name: postgresql_service
+
+  realiza-service:
+    restart: always
+    build: ./realiza_back
+    volumes:
+     - ./realiza_back:/usr/src/app
+    ports:
+     - 6000:3000
+    networks:
+     - app-tier
+    depends_on:
+     - database-service
+    container_name: servicio_realiza_back
+
+  fast-api-service:
+    restart: always
+    build: ./fast_api
+    volumes:
+      - ./api:/usr/src/app
+    ports:
+      - 6005:6005
+    networks:
+      - app-tier
+    depends_on:
+      - realiza-service
+    container_name: servicio_fast_api
+
+  realiza-web-app:
+    restart: always
+    build: ./realiza_front
+    volumes:
+      - ./realiza_front:/usr/src/app
+    ports:
+      - 6060:3000
+    networks:
+      - app-tier
+    container_name: servicio-web_app
+
+networks:
+  app-tier:
+    driver: bridge     
+volumes:
+  database-data:

@@ -1,0 +1,16 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+
+CREATE TABLE usuarios2 (
+    id SERIAL PRIMARY KEY,
+    nombre_usuario TEXT NOT NULL,
+    contrasena TEXT NOT NULL
+);
+
+INSERT INTO usuarios2 (nombre_usuario, contrasena)
+VALUES ('jonas', crypt('jonas1234', gen_salt('bf')));
+
+
+SELECT * FROM usuarios2 WHERE nombre_usuario = 'jonas' AND contrasena = crypt('jonas1234', contrasena);
+
+
